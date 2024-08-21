@@ -1,3 +1,6 @@
+map_plan_search_not_moved(clear).py
+#주소검색하면 평면도 있는 곳이 표시되기는 하지만, 이동되지는 않음
+
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
@@ -21,16 +24,8 @@ geolocator = GoogleV3(api_key=api_key)
 st.sidebar.title("현위치 입력")
 location_input = st.sidebar.text_input("위치 입력 (예: 서울, 대전, New York)", "대전")
 
-# 상태 관리: 사용자가 입력한 주소를 저장
-if 'location' not in st.session_state:
-    st.session_state['location'] = None
-
-if st.sidebar.button('위치 검색'):
-    location = geolocator.geocode(location_input)
-    if location:
-        st.session_state['location'] = location
-    else:
-        st.error("위치를 찾을 수 없습니다. 다시 입력해 주세요.")
+# 입력된 위치의 좌표를 가져오기
+location = geolocator.geocode(location_input)
 
 # Folium 지도 생성 함수
 def create_map(center_location=[36.3504, 127.3845]):
@@ -78,10 +73,11 @@ def create_map(center_location=[36.3504, 127.3845]):
     return map_obj
 
 # 지도를 생성하고, 사용자가 입력한 위치를 기반으로 중심 이동
-if st.session_state['location']:
-    map_display = create_map(center_location=[st.session_state['location'].latitude, st.session_state['location'].longitude])
-    folium.Marker([st.session_state['location'].latitude, st.session_state['location'].longitude], tooltip="Current Location").add_to(map_display)
+if location:
+    map_display = create_map(center_location=[location.latitude, location.longitude])
+    folium.Marker([location.latitude, location.longitude], tooltip="Current Location").add_to(map_display)
 else:
+    st.error("위치를 찾을 수 없습니다. 다시 입력해 주세요.")
     map_display = create_map()
 
 # 지도 출력
